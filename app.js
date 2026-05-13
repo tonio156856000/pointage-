@@ -42,8 +42,19 @@ function renderFavorisChips() {
   if (!savedClients.length) { container.innerHTML = ''; return; }
   container.innerHTML = savedClients.map((c, i) => {
     const label = [c.client, c.nomClient, c.chantier].filter(Boolean).join(' · ');
-    return `<button class="favori-chip" onclick="selectClient(${i})">${label}</button>`;
+    return `<div class="favori-chip">
+      <span onclick="selectClient(${i})">${label}</span>
+      <button class="favori-delete" onclick="deleteClient(${i})">✕</button>
+    </div>`;
   }).join('');
+}
+
+function deleteClient(index) {
+  savedClients.splice(index, 1);
+  saveClients();
+  renderFavorisChips();
+  updateDatalistClients();
+  showToast('🗑 Client supprimé');
 }
 
 function selectClient(index) {
@@ -73,9 +84,12 @@ function saveClientFavori() {
   const client    = document.getElementById('f-client').value.trim().toUpperCase();
   const nomClient = document.getElementById('f-nom-client').value.trim().toUpperCase();
   const chantier  = document.getElementById('f-chantier').value.trim();
-  if (client || nomClient || chantier) {
-    addClientToFavoris(client, nomClient, chantier);
+  if (!client && !nomClient && !chantier) {
+    showToast('⚠️ Remplis au moins un champ client');
+    return;
   }
+  addClientToFavoris(client, nomClient, chantier);
+  showToast('✅ Client enregistré !');
 }
 
 function suggestClient() {

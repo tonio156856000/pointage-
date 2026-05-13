@@ -88,22 +88,23 @@
           <div class="field">
             <label>Code client</label>
             <input type="text" id="f-client" placeholder="ex: AI" maxlength="10"
-              list="list-client" oninput="suggestClient()" onblur="autoSave(); saveClientFavori()">
+              list="list-client" oninput="suggestClient()" onchange="autoSave()">
             <datalist id="list-client"></datalist>
           </div>
           <div class="field flex2">
             <label>Nom client</label>
             <input type="text" id="f-nom-client" placeholder="ex: BOUTIN"
-              list="list-nom-client" onblur="autoSave()">
+              list="list-nom-client" onchange="autoSave()">
             <datalist id="list-nom-client"></datalist>
           </div>
         </div>
         <div class="field">
           <label>N° Chantier / Affaire</label>
           <input type="text" id="f-chantier" placeholder="ex: 25-6028"
-            list="list-chantier" oninput="onChantierInput()" onblur="autoSave(); saveClientFavori()">
+            list="list-chantier" oninput="onChantierInput()" onchange="autoSave()">
           <datalist id="list-chantier"></datalist>
         </div>
+        <button class="btn-save-client" onclick="saveClientFavori()">💾 Enregistrer ce client</button>
       </div>
 
       <!-- ── SECTION TRAJET ── -->
