@@ -186,17 +186,19 @@
             <input type="time" id="set-arrivee" value="08:00">
           </div>
           <div class="field">
-            <label>Pause (min)</label>
-            <input type="number" id="set-pause" value="30" min="0" max="120">
-          </div>
-          <div class="field">
             <label>Heure départ</label>
             <input type="time" id="set-depart" value="17:00">
           </div>
         </div>
-        <div class="field">
-          <label>Heures / semaine</label>
-          <input type="number" id="set-weekly" value="35" min="1" max="60">
+        <div class="field-row">
+          <div class="field">
+            <label>Pause midi (min)</label>
+            <input type="number" id="set-pause" value="30" min="0" max="120">
+          </div>
+          <div class="field">
+            <label>Heures / semaine</label>
+            <input type="number" id="set-weekly" value="35" min="1" max="60">
+          </div>
         </div>
         <button class="btn-save" onclick="saveSettings()">Enregistrer</button>
       </div>
