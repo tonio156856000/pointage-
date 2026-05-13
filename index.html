@@ -88,20 +88,20 @@
           <div class="field">
             <label>Code client</label>
             <input type="text" id="f-client" placeholder="ex: AI" maxlength="10"
-              list="list-client" oninput="autoSave(); suggestClient()">
+              list="list-client" oninput="suggestClient()" onblur="autoSave(); saveClientFavori()">
             <datalist id="list-client"></datalist>
           </div>
           <div class="field flex2">
             <label>Nom client</label>
             <input type="text" id="f-nom-client" placeholder="ex: BOUTIN"
-              list="list-nom-client" oninput="autoSave()">
+              list="list-nom-client" onblur="autoSave()">
             <datalist id="list-nom-client"></datalist>
           </div>
         </div>
         <div class="field">
           <label>N° Chantier / Affaire</label>
           <input type="text" id="f-chantier" placeholder="ex: 25-6028"
-            list="list-chantier" oninput="autoSave(); onChantierInput()">
+            list="list-chantier" oninput="onChantierInput()" onblur="autoSave(); saveClientFavori()">
           <datalist id="list-chantier"></datalist>
         </div>
       </div>

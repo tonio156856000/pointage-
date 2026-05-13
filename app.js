@@ -69,6 +69,15 @@ function updateDatalistClients() {
     chantiers.map(v => `<option value="${v}">`).join('');
 }
 
+function saveClientFavori() {
+  const client    = document.getElementById('f-client').value.trim().toUpperCase();
+  const nomClient = document.getElementById('f-nom-client').value.trim().toUpperCase();
+  const chantier  = document.getElementById('f-chantier').value.trim();
+  if (client || nomClient || chantier) {
+    addClientToFavoris(client, nomClient, chantier);
+  }
+}
+
 function suggestClient() {
   // Auto-remplir nomClient si le code client est connu
   const val = document.getElementById('f-client').value.trim().toUpperCase();
@@ -222,11 +231,6 @@ function autoSave() {
   e.deplacement = parseFloat(document.getElementById('f-deplacement').value) || 0;
   e.ticketResto = parseFloat(document.getElementById('f-ticket').value)      || 0;
   e.vehicule    = parseFloat(document.getElementById('f-vehicule').value)    || 0;
-
-  // Enregistrer combo client/chantier dans les favoris
-  if (e.client || e.nomClient || e.chantier) {
-    addClientToFavoris(e.client, e.nomClient, e.chantier);
-  }
 
   saveData();
   updateBanner();
