@@ -54,17 +54,18 @@
             <input type="time" id="f-arrivee" onchange="autoSave()">
           </div>
           <div class="field">
-            <label>Pause (min)</label>
-            <input type="number" id="f-pause" min="0" max="120" placeholder="30" onchange="autoSave(); updateBanner()">
-          </div>
-          <div class="field">
             <label>Départ</label>
             <input type="time" id="f-depart" onchange="autoSave()">
           </div>
         </div>
-        <div class="field">
-          <label>Type de journée</label>
-          <select id="f-type" onchange="autoSave()">
+        <div class="field-row">
+          <div class="field">
+            <label>Pause midi (min)</label>
+            <input type="number" id="f-pause" min="0" max="120" placeholder="30" onchange="autoSave(); updateBanner()">
+          </div>
+          <div class="field flex2">
+            <label>Type de journée</label>
+            <select id="f-type" onchange="autoSave()">
             <option value="normal">Normal</option>
             <option value="conge">Congé</option>
             <option value="sans-solde">Sans solde</option>
@@ -73,6 +74,7 @@
             <option value="ferie">Férié</option>
             <option value="rtt">RTT</option>
           </select>
+          </div>
         </div>
       </div>
 
@@ -115,16 +117,16 @@
       <div class="card">
         <div class="field-row">
           <div class="field">
-            <label>Repas (€)</label>
-            <input type="number" id="f-repas" min="0" step="0.01" placeholder="0" onchange="autoSave()">
+            <label>Repas</label>
+            <input type="number" id="f-repas" min="0" step="1" placeholder="0" onchange="autoSave()">
           </div>
           <div class="field">
-            <label>Nuit (€)</label>
-            <input type="number" id="f-nuit" min="0" step="0.01" placeholder="0" onchange="autoSave()">
+            <label>Nuit</label>
+            <input type="number" id="f-nuit" min="0" step="1" placeholder="0" onchange="autoSave()">
           </div>
           <div class="field">
-            <label>Déplacement (€)</label>
-            <input type="number" id="f-deplacement" min="0" step="0.01" placeholder="0" onchange="autoSave()">
+            <label>Déplacement</label>
+            <input type="number" id="f-deplacement" min="0" step="1" placeholder="0" onchange="autoSave()">
           </div>
         </div>
       </div>
@@ -134,12 +136,12 @@
       <div class="card">
         <div class="field-row">
           <div class="field">
-            <label>Ticket Resto (€)</label>
-            <input type="number" id="f-ticket" min="0" step="0.01" placeholder="0" onchange="autoSave()">
+            <label>Ticket Resto</label>
+            <input type="number" id="f-ticket" min="0" step="1" placeholder="0" onchange="autoSave()">
           </div>
           <div class="field">
-            <label>Véhicule (€)</label>
-            <input type="number" id="f-vehicule" min="0" step="0.01" placeholder="0" onchange="autoSave()">
+            <label>Véhicule</label>
+            <input type="number" id="f-vehicule" min="0" step="1" placeholder="0" onchange="autoSave()">
           </div>
         </div>
       </div>

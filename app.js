@@ -302,11 +302,11 @@ function buildFraisChips(e) {
   const f = [];
   if (e.pTraj)       f.push(`P.Traj ×${e.pTraj}`);
   if (e.gTraj)       f.push(`G.Traj ×${e.gTraj}`);
-  if (e.repas)       f.push(`Repas ${e.repas}€`);
-  if (e.nuit)        f.push(`Nuit ${e.nuit}€`);
-  if (e.deplacement) f.push(`Dépl. ${e.deplacement}€`);
-  if (e.ticketResto) f.push(`T.Resto ${e.ticketResto}€`);
-  if (e.vehicule)    f.push(`Véhicule ${e.vehicule}€`);
+  if (e.repas)       f.push(`Repas ×${e.repas}`);
+  if (e.nuit)        f.push(`Nuit ×${e.nuit}`);
+  if (e.deplacement) f.push(`Dépl. ×${e.deplacement}`);
+  if (e.ticketResto) f.push(`T.Resto ×${e.ticketResto}`);
+  if (e.vehicule)    f.push(`Véhicule ×${e.vehicule}`);
   return f.map(x=>`<span class="frais-chip">${x}</span>`).join('');
 }
 
@@ -360,11 +360,11 @@ function renderStats() {
       <div class="frais-totals">
         <div class="frais-total-item"><span>Petit Trajet</span><strong>×${fv(tot.pTraj)}</strong></div>
         <div class="frais-total-item"><span>Grand Trajet</span><strong>×${fv(tot.gTraj)}</strong></div>
-        <div class="frais-total-item"><span>Forfait Repas</span><strong>${fv(tot.repas)} €</strong></div>
-        <div class="frais-total-item"><span>Forfait Nuit</span><strong>${fv(tot.nuit)} €</strong></div>
-        <div class="frais-total-item"><span>Déplacement</span><strong>${fv(tot.deplacement)} €</strong></div>
-        <div class="frais-total-item"><span>Ticket Resto</span><strong>${fv(tot.ticketResto)} €</strong></div>
-        <div class="frais-total-item"><span>Véhicule</span><strong>${fv(tot.vehicule)} €</strong></div>
+        <div class="frais-total-item"><span>Forfait Repas</span><strong>×${fv(tot.repas)}</strong></div>
+        <div class="frais-total-item"><span>Forfait Nuit</span><strong>×${fv(tot.nuit)}</strong></div>
+        <div class="frais-total-item"><span>Déplacement</span><strong>×${fv(tot.deplacement)}</strong></div>
+        <div class="frais-total-item"><span>Ticket Resto</span><strong>×${fv(tot.ticketResto)}</strong></div>
+        <div class="frais-total-item"><span>Véhicule</span><strong>×${fv(tot.vehicule)}</strong></div>
       </div>
     </div>`;
 }
