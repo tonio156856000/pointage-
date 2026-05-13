@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#2563eb">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Pointage">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <link rel="stylesheet" href="style.css">
+  <title>Mon Pointage</title>
+</head>
+<body>
+
+  <main>
+
+    <!-- ═══════════════ PAGE ACCUEIL ═══════════════ -->
+    <div id="page-accueil" class="page active">
+      <div class="header">
+        <h1>Mon Pointage</h1>
+        <p id="date-today" class="date-today"></p>
+      </div>
+
+      <div class="status-card" id="status-card">
+        <div class="status-icon" id="status-icon">⏰</div>
+        <div class="status-text" id="status-text">Non pointé</div>
+        <div class="status-time" id="status-time"></div>
+      </div>
+
+      <div class="action-buttons">
+        <button class="btn btn-arrive" id="btn-arrive" onclick="pointer('arrivee')">
+          <span class="btn-icon">▶</span>
+          <span class="btn-label">Arrivée</span>
+          <span class="btn-sub" id="btn-arrive-sub">Pointer</span>
+        </button>
+        <button class="btn btn-depart" id="btn-depart" onclick="pointer('depart')" disabled>
+          <span class="btn-icon">■</span>
+          <span class="btn-label">Départ</span>
+          <span class="btn-sub" id="btn-depart-sub">Pointer</span>
+        </button>
+      </div>
+
+      <div class="card today-summary">
+        <div class="summary-row">
+          <span class="summary-label">Arrivée</span>
+          <span id="today-arrive" class="summary-val">--:--</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-label">Pause midi</span>
+          <span id="today-pause" class="summary-val muted">--</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-label">Départ</span>
+          <span id="today-depart" class="summary-val">--:--</span>
+        </div>
+        <div class="summary-row total">
+          <span class="summary-label">Temps net</span>
+          <span id="today-total" class="summary-val">--h--</span>
+        </div>
+        <div class="summary-row" id="today-client-row" style="display:none">
+          <span class="summary-label">Client</span>
+          <span id="today-client" class="summary-val client-tag">--</span>
+        </div>
+        <button class="btn-edit-day" onclick="openEditor(todayKey())">✏️ Éditer la journée</button>
+      </div>
+
+      <div class="card week-card">
+        <div class="week-header">
+          <span class="card-label">Cette semaine</span>
+          <span id="week-hours" class="week-total">0h00</span>
+        </div>
+        <div class="week-days" id="week-days"></div>
+        <div class="week-progress-bar">
+          <div class="week-bar-fill" id="week-bar"></div>
+        </div>
+        <div class="week-target">Objectif : <span id="week-target-label">35h00</span></div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ PAGE HISTORIQUE ═══════════════ -->
+    <div id="page-historique" class="page">
+      <div class="header">
+        <h1>Historique</h1>
+      </div>
+      <div id="history-list"></div>
+    </div>
+
+    <!-- ═══════════════ PAGE STATS ═══════════════ -->
+    <div id="page-stats" class="page">
+      <div class="header">
+        <h1>Statistiques</h1>
+      </div>
+      <div id="stats-content"></div>
+    </div>
+
+    <!-- ═══════════════ PAGE PARAMÈTRES ═══════════════ -->
+    <div id="page-settings" class="page">
+      <div class="header">
+        <h1>Paramètres</h1>
+      </div>
+
+      <div class="card settings-section">
+        <div class="card-label-top">Horaires par défaut</div>
+        <div class="setting-item">
+          <label>Heure d'arrivée</label>
+          <input type="time" id="set-heure-arrivee" value="08:00">
+        </div>
+        <div class="setting-item">
+          <label>Pause midi (min)</label>
+          <input type="number" id="set-pause" value="30" min="0" max="120" style="width:64px;text-align:center">
+        </div>
+        <div class="setting-item">
+          <label>Heure de départ</label>
+          <input type="time" id="set-heure-depart" value="17:00">
+        </div>
+        <div class="setting-item">
+          <label>Heures / semaine</label>
+          <input type="number" id="set-weekly-hours" value="35" min="1" max="60" style="width:64px;text-align:center">
+        </div>
+        <button class="btn-save" onclick="saveSettings()">Enregistrer</button>
+      </div>
+
+      <div class="card settings-section">
+        <div class="card-label-top">Notifications iPhone — Raccourcis</div>
+        <p class="notif-info">
+          Crée deux automations dans l'app <strong>Raccourcis</strong> :
+        </p>
+        <div class="shortcut-block">
+          <div class="shortcut-title">🌅 Matin — rappel arrivée</div>
+          <div class="shortcut-steps">
+            <p>1. <strong>Raccourcis</strong> → <strong>Automatisations</strong> → <strong>+</strong></p>
+            <p>2. <strong>Heure de la journée</strong> → <strong id="shortcut-matin">08:00</strong></p>
+            <p>3. Répéter : <strong>Lun → Ven</strong></p>
+            <p>4. Action : <strong>Envoyer une notification</strong></p>
+            <p>5. Titre : <em>⏰ Pointer arrivée !</em></p>
+          </div>
+        </div>
+        <div class="shortcut-block">
+          <div class="shortcut-title">🌆 Soir — rappel départ</div>
+          <div class="shortcut-steps">
+            <p>1. Même étapes → Heure : <strong id="shortcut-soir">17:00</strong></p>
+            <p>2. Titre : <em>🏠 Pointer départ !</em></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card settings-section">
+        <div class="card-label-top">Données</div>
+        <button class="btn-action" onclick="exportCSV()">📥 Exporter feuille d'heures (CSV)</button>
+        <button class="btn-action danger" onclick="clearAllData()">🗑 Effacer toutes les données</button>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ═══════════════ NAV BAS ═══════════════ -->
+  <nav class="nav-bar">
+    <button class="nav-btn active" data-page="accueil" onclick="showPage('accueil', this)">
+      <span class="nav-icon">🏠</span><span>Accueil</span>
+    </button>
+    <button class="nav-btn" data-page="historique" onclick="showPage('historique', this)">
+      <span class="nav-icon">📋</span><span>Historique</span>
+    </button>
+    <button class="nav-btn" data-page="stats" onclick="showPage('stats', this)">
+      <span class="nav-icon">📊</span><span>Stats</span>
+    </button>
+    <button class="nav-btn" data-page="settings" onclick="showPage('settings', this)">
+      <span class="nav-icon">⚙️</span><span>Réglages</span>
+    </button>
+  </nav>
+
+  <!-- ═══════════════ ÉDITEUR DE JOURNÉE (BOTTOM SHEET) ═══════════════ -->
+  <div class="sheet-overlay" id="sheet-overlay" onclick="closeEditor()"></div>
+  <div class="bottom-sheet" id="bottom-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <span class="sheet-title" id="sheet-title">Journée du —</span>
+      <button class="sheet-close" onclick="closeEditor()">✕</button>
+    </div>
+    <div class="sheet-body">
+
+      <!-- Section : Temps -->
+      <div class="form-section">
+        <div class="form-section-title">⏱ Temps</div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Arrivée</label>
+            <input type="time" id="ed-arrivee">
+          </div>
+          <div class="form-field">
+            <label>Départ</label>
+            <input type="time" id="ed-depart">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Pause midi (min)</label>
+            <input type="number" id="ed-pause" min="0" max="120" placeholder="30">
+          </div>
+          <div class="form-field">
+            <label>Type de journée</label>
+            <select id="ed-type">
+              <option value="normal">Normal</option>
+              <option value="conge">Congé</option>
+              <option value="sans-solde">Sans solde</option>
+              <option value="formation">Formation</option>
+              <option value="maladie">Maladie</option>
+              <option value="ferie">Férié</option>
+              <option value="rtt">RTT</option>
+            </select>
+          </div>
+        </div>
+        <div class="net-time-preview" id="net-time-preview">Temps net : --</div>
+      </div>
+
+      <!-- Section : Mission -->
+      <div class="form-section">
+        <div class="form-section-title">🏗 Mission</div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Code client</label>
+            <input type="text" id="ed-client" placeholder="ex: AI" maxlength="10">
+          </div>
+          <div class="form-field flex2">
+            <label>Nom du client</label>
+            <input type="text" id="ed-nom-client" placeholder="ex: BOUTIN">
+          </div>
+        </div>
+        <div class="form-field">
+          <label>N° Chantier / Affaire</label>
+          <input type="text" id="ed-chantier" placeholder="ex: 25-6028">
+        </div>
+      </div>
+
+      <!-- Section : Trajet -->
+      <div class="form-section">
+        <div class="form-section-title">🚗 Trajet</div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Petit Trajet</label>
+            <input type="number" id="ed-ptraj" min="0" step="0.5" placeholder="0">
+          </div>
+          <div class="form-field">
+            <label>Grand Trajet</label>
+            <input type="number" id="ed-gtraj" min="0" step="0.5" placeholder="0">
+          </div>
+        </div>
+      </div>
+
+      <!-- Section : Forfaits -->
+      <div class="form-section">
+        <div class="form-section-title">💰 Forfaits</div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Repas (€)</label>
+            <input type="number" id="ed-repas" min="0" step="0.01" placeholder="0">
+          </div>
+          <div class="form-field">
+            <label>Nuit (€)</label>
+            <input type="number" id="ed-nuit" min="0" step="0.01" placeholder="0">
+          </div>
+          <div class="form-field">
+            <label>Déplacement (€)</label>
+            <input type="number" id="ed-deplacement" min="0" step="0.01" placeholder="0">
+          </div>
+        </div>
+      </div>
+
+      <!-- Section : Autres frais -->
+      <div class="form-section">
+        <div class="form-section-title">🧾 Autres frais</div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Ticket Resto (€)</label>
+            <input type="number" id="ed-ticket" min="0" step="0.01" placeholder="0">
+          </div>
+          <div class="form-field">
+            <label>Véhicule (€)</label>
+            <input type="number" id="ed-vehicule" min="0" step="0.01" placeholder="0">
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-save-sheet" onclick="saveEditor()">✅ Enregistrer</button>
+      <div style="height: 16px"></div>
+
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
