@@ -1,22 +1,94 @@
 const DATA_KEY     = 'pointage_data';
 const SETTINGS_KEY = 'pointage_settings';
+const CLIENTS_KEY  = 'pointage_clients';
 
 const JOURS_COURT = ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
 const JOURS_FULL  = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
 const MOIS_COURT  = ['jan','fév','mar','avr','mai','juin','juil','août','sep','oct','nov','déc'];
 const MOIS_FULL   = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
 
-let data     = {};
-let settings = { heureArrivee:'08:00', heureDepart:'17:00', pauseMin:30, weeklyHours:35 };
+let data        = {};
+let settings    = { heureArrivee:'08:00', heureDepart:'17:00', pauseMin:30, weeklyHours:35 };
+let savedClients = []; // [{client, nomClient, chantier}]
 let currentDate = todayKey();
 
 // ═══ PERSISTANCE ═══
 function loadData() {
   const d = localStorage.getItem(DATA_KEY);     if (d) data = JSON.parse(d);
   const s = localStorage.getItem(SETTINGS_KEY); if (s) settings = { ...settings, ...JSON.parse(s) };
+  const c = localStorage.getItem(CLIENTS_KEY);  if (c) savedClients = JSON.parse(c);
 }
-function saveData()            { localStorage.setItem(DATA_KEY,     JSON.stringify(data));     }
-function savePersistSettings() { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
+function saveData()            { localStorage.setItem(DATA_KEY,     JSON.stringify(data));         }
+function savePersistSettings() { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));     }
+function saveClients()         { localStorage.setItem(CLIENTS_KEY,  JSON.stringify(savedClients)); }
+
+// ═══ GESTION CLIENTS FAVORIS ═══
+function addClientToFavoris(client, nomClient, chantier) {
+  if (!client && !nomClient && !chantier) return;
+  const exists = savedClients.find(c =>
+    c.client === client && c.nomClient === nomClient && c.chantier === chantier);
+  if (!exists) {
+    savedClients.unshift({ client, nomClient, chantier });
+    if (savedClients.length > 20) savedClients.pop(); // max 20
+    saveClients();
+    renderFavorisChips();
+    updateDatalistClients();
+  }
+}
+
+function renderFavorisChips() {
+  const container = document.getElementById('clients-favoris');
+  if (!container) return;
+  if (!savedClients.length) { container.innerHTML = ''; return; }
+  container.innerHTML = savedClients.map((c, i) => {
+    const label = [c.client, c.nomClient, c.chantier].filter(Boolean).join(' · ');
+    return `<button class="favori-chip" onclick="selectClient(${i})">${label}</button>`;
+  }).join('');
+}
+
+function selectClient(index) {
+  const c = savedClients[index];
+  if (!c) return;
+  document.getElementById('f-client').value     = c.client     || '';
+  document.getElementById('f-nom-client').value = c.nomClient  || '';
+  document.getElementById('f-chantier').value   = c.chantier   || '';
+  autoSave();
+  showToast(`✅ ${[c.client, c.nomClient, c.chantier].filter(Boolean).join(' · ')}`);
+}
+
+function updateDatalistClients() {
+  const clients   = [...new Set(savedClients.map(c => c.client).filter(Boolean))];
+  const nomClients = [...new Set(savedClients.map(c => c.nomClient).filter(Boolean))];
+  const chantiers = [...new Set(savedClients.map(c => c.chantier).filter(Boolean))];
+
+  document.getElementById('list-client').innerHTML =
+    clients.map(v => `<option value="${v}">`).join('');
+  document.getElementById('list-nom-client').innerHTML =
+    nomClients.map(v => `<option value="${v}">`).join('');
+  document.getElementById('list-chantier').innerHTML =
+    chantiers.map(v => `<option value="${v}">`).join('');
+}
+
+function suggestClient() {
+  // Auto-remplir nomClient si le code client est connu
+  const val = document.getElementById('f-client').value.trim().toUpperCase();
+  const match = savedClients.find(c => c.client === val);
+  if (match && !document.getElementById('f-nom-client').value) {
+    document.getElementById('f-nom-client').value = match.nomClient || '';
+  }
+}
+
+function onChantierInput() {
+  // Auto-remplir client + nomClient si le chantier est connu
+  const val = document.getElementById('f-chantier').value.trim();
+  const match = savedClients.find(c => c.chantier === val);
+  if (match) {
+    if (!document.getElementById('f-client').value)
+      document.getElementById('f-client').value = match.client || '';
+    if (!document.getElementById('f-nom-client').value)
+      document.getElementById('f-nom-client').value = match.nomClient || '';
+  }
+}
 
 // ═══ HELPERS ═══
 function todayKey() { return new Date().toISOString().split('T')[0]; }
@@ -150,6 +222,11 @@ function autoSave() {
   e.deplacement = parseFloat(document.getElementById('f-deplacement').value) || 0;
   e.ticketResto = parseFloat(document.getElementById('f-ticket').value)      || 0;
   e.vehicule    = parseFloat(document.getElementById('f-vehicule').value)    || 0;
+
+  // Enregistrer combo client/chantier dans les favoris
+  if (e.client || e.nomClient || e.chantier) {
+    addClientToFavoris(e.client, e.nomClient, e.chantier);
+  }
 
   saveData();
   updateBanner();
@@ -389,49 +466,97 @@ function saveSettings() {
   updateWeek();
 }
 
-// ═══ EXPORT CSV ═══
+// ═══ EXPORT CSV — FORMAT FEUILLE D'HEURES ═══
 function exportCSV() {
   const allDates = Object.keys(data).sort();
   if (!allDates.length) { showToast('⚠️ Aucune donnée à exporter'); return; }
 
-  const weekGroups={};
-  allDates.forEach(date=>{
-    const d=new Date(date+'T12:00:00');
-    const mon=new Date(d); mon.setDate(d.getDate()-(d.getDay()===0?6:d.getDay()-1));
-    const k=mon.toISOString().split('T')[0];
-    if(!weekGroups[k])weekGroups[k]={};
-    weekGroups[k][date]=data[date];
+  // Grouper par semaine
+  const weekGroups = {};
+  allDates.forEach(date => {
+    const d = new Date(date + 'T12:00:00');
+    const mon = new Date(d);
+    mon.setDate(d.getDate() - (d.getDay() === 0 ? 6 : d.getDay() - 1));
+    const k = mon.toISOString().split('T')[0];
+    if (!weekGroups[k]) weekGroups[k] = {};
+    weekGroups[k][date] = data[date];
   });
 
-  const S=';'; let csv='';
-  Object.entries(weekGroups).sort().forEach(([monDate,wData])=>{
-    const d=new Date(monDate+'T12:00:00');
-    csv+=`Semaine${S}${getWeekNumber(d)}\n`;
-    csv+=`Date${S}Jour${S}Client${S}Nom Client${S}N° Chantier${S}Travail${S}P.Traj${S}G.Traj${S}Type${S}Forfait Repas${S}Forfait Nuit${S}Déplacement${S}Ticket Resto${S}Véhicule\n`;
+  const S = ';';
+  const fv = v => (v || 0).toString().replace('.', ',');
+  const fd = v => v ? toDecimal(v).toString().replace('.', ',') : '';
+  let csv = '';
 
-    let tT=0,tP=0,tG=0,tR=0,tN=0,tD=0,tTk=0,tV=0;
-    getWeekDates7(monDate).forEach(date=>{
-      const e=wData[date]||{};
-      const dd=new Date(date+'T12:00:00');
-      const pause=e.pauseMin!==undefined?e.pauseMin:settings.pauseMin;
-      const net=calcNetMinutes(e.arrivee,e.depart,pause);
-      const dec=net?toDecimal(net).toString().replace('.',','):'';
-      if(net)tT+=net; tP+=e.pTraj||0; tG+=e.gTraj||0;
-      tR+=e.repas||0; tN+=e.nuit||0; tD+=e.deplacement||0;
-      tTk+=e.ticketResto||0; tV+=e.vehicule||0;
-      const type={'normal':'','conge':'congé','sans-solde':'sans solde','formation':'formation','maladie':'maladie','ferie':'férié','rtt':'RTT'}[e.typeJournee||'normal']||'';
-      const fv=v=>v?v.toString().replace('.',','):'0';
-      csv+=[formatDateFR(dd),JOURS_FULL[dd.getDay()],e.client||'',e.nomClient||'',e.chantier||'',dec,fv(e.pTraj),fv(e.gTraj),type,fv(e.repas),fv(e.nuit),fv(e.deplacement),fv(e.ticketResto),fv(e.vehicule)].join(S)+'\n';
+  // Récupérer nom/prénom depuis le premier client sauvegardé
+  const nom    = savedClients[0]?.nomClient || '';
+  const prenom = savedClients[0]?.client    || '';
+
+  Object.entries(weekGroups).sort().forEach(([monDate, wData]) => {
+    const monD   = new Date(monDate + 'T12:00:00');
+    const semNum = getWeekNumber(monD);
+    const moisAn = `${MOIS_FULL[monD.getMonth()]}-${monD.getFullYear()}`;
+
+    // En-tête
+    csv += `${nom}${S}${prenom}${S}${S}${moisAn}\n`;
+    csv += `\n`;
+    csv += `Semaine${S}${S}${S}${S}${semNum}\n`;
+    csv += `Date${S}Client${S}${S}N° Chantier${S}${S}Temps${S}${S}${S}${S}${S}${S}\n`;
+    csv += `${S}${S}${S}${S}${S}Travail${S}P.Traj${S}G.Traj${S}${S}${S}${S}\n`;
+
+    let tTravail=0, tPTraj=0, tGTraj=0, tRepas=0, tNuit=0, tDepl=0, tTicket=0;
+
+    getWeekDates7(monDate).forEach(date => {
+      const e  = wData[date] || {};
+      const dd = new Date(date + 'T12:00:00');
+      const pause = e.pauseMin !== undefined ? e.pauseMin : settings.pauseMin;
+      const net   = calcNetMinutes(e.arrivee, e.depart, pause);
+      const travH = fd(net);
+      if (net) tTravail += net;
+      tPTraj  += e.pTraj       || 0;
+      tGTraj  += e.gTraj       || 0;
+      tRepas  += e.repas       || 0;
+      tNuit   += e.nuit        || 0;
+      tDepl   += e.deplacement || 0;
+      tTicket += e.ticketResto || 0;
+
+      const typeLabel = {
+        'conge':'congé','sans-solde':'sans solde',
+        'formation':'formation','maladie':'maladie',
+        'ferie':'férié','rtt':'RTT'
+      }[e.typeJournee || ''] || '';
+
+      // Ligne principale du jour : nom du jour + client + heures + Forfait Repas
+      csv += `${JOURS_FULL[dd.getDay()]}${S}${e.client||typeLabel}${S}${e.nomClient||''}${S}${e.chantier||''}${S}${S}${travH}${S}${fv(e.pTraj)}${S}${fv(e.gTraj)}${S}${S}Forfait${S}${fv(e.repas)}${S}Repas\n`;
+      // Ligne Nuit
+      csv += `${S}${S}${S}${S}${S}${S}${S}${S}${S}${S}${fv(e.nuit)}${S}Nuit\n`;
+      // Ligne Déplacement
+      csv += `${S}${S}${S}${S}${S}${S}${S}${S}${S}${S}${fv(e.deplacement)}${S}Déplacement\n`;
+      // Ligne Ticket Resto (Autre)
+      csv += `${S}${S}${S}${S}${S}${S}${S}${S}${S}Autre${S}${fv(e.ticketResto)}${S}Ticket Resto\n`;
+      // Ligne Véhicule
+      csv += `${S}${S}${S}${S}${S}${S}${S}${S}${S}${S}${fv(e.vehicule)}${S}Véhicule\n`;
+      // Ligne date
+      csv += `${formatDateFR(dd)}\n`;
+      csv += `\n`;
     });
-    const ft=v=>v?toDecimal(v).toString().replace('.',','):'0';
-    const fn=v=>v?v.toString().replace('.',','):'0';
-    csv+=`${S}TOTAL${S}${S}${S}${S}${ft(tT)}${S}${fn(tP)}${S}${fn(tG)}${S}${S}${fn(tR)}${S}${fn(tN)}${S}${fn(tD)}${S}${fn(tTk)}${S}${fn(tV)}\n\n`;
+
+    // Totaux
+    csv += `${S}${S}${S}${S}Total  Petit Trajet${S}${S}${S}${S}${S}${S}${S}${fv(tPTraj)}\n`;
+    csv += `${S}${S}${S}${S}Total  Grand trajet${S}${S}${S}${S}${S}${S}${S}${fv(tGTraj)}\n`;
+    csv += `${S}${S}${S}${S}Total  Heures${S}${S}${S}${S}${S}${S}${S}${fd(tTravail)}\n`;
+    csv += `${S}${S}${S}${S}Total Forfait Repas${S}${S}${S}${S}${S}${S}${S}${fv(tRepas)}\n`;
+    csv += `${S}${S}${S}${S}Total Forfait Nuit${S}${S}${S}${S}${S}${S}${S}${fv(tNuit)}\n`;
+    csv += `${S}${S}${S}${S}Total Déplacement${S}${S}${S}${S}${S}${S}${S}${fv(tDepl)}\n`;
+    csv += `${S}${S}${S}${S}Total Ticket Restaurant${S}${S}${S}${S}${S}${S}${S}${fv(tTicket)}\n`;
+    csv += `\n\n`;
   });
 
-  const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url; a.download=`feuille_heures_${todayKey()}.csv`; a.click();
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url;
+  a.download = `feuille_heures_${todayKey()}.csv`;
+  a.click();
   URL.revokeObjectURL(url);
   showToast('📥 Export téléchargé !');
 }
@@ -454,6 +579,8 @@ document.addEventListener('DOMContentLoaded', () => {
   loadData();
   updateDateHeader();
   fillFields(currentDate);
+  renderFavorisChips();
+  updateDatalistClients();
   updateBanner();
   updateButtons();
   updateWeek();

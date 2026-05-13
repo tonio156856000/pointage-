@@ -81,19 +81,28 @@
       <!-- ── SECTION MISSION ── -->
       <div class="section-title">🏗 Mission</div>
       <div class="card">
+        <!-- Favoris clients -->
+        <div id="clients-favoris" class="favoris-liste"></div>
+
         <div class="field-row">
           <div class="field">
             <label>Code client</label>
-            <input type="text" id="f-client" placeholder="ex: AI" maxlength="10" onchange="autoSave()">
+            <input type="text" id="f-client" placeholder="ex: AI" maxlength="10"
+              list="list-client" oninput="autoSave(); suggestClient()">
+            <datalist id="list-client"></datalist>
           </div>
           <div class="field flex2">
             <label>Nom client</label>
-            <input type="text" id="f-nom-client" placeholder="ex: BOUTIN" onchange="autoSave()">
+            <input type="text" id="f-nom-client" placeholder="ex: BOUTIN"
+              list="list-nom-client" oninput="autoSave()">
+            <datalist id="list-nom-client"></datalist>
           </div>
         </div>
         <div class="field">
           <label>N° Chantier / Affaire</label>
-          <input type="text" id="f-chantier" placeholder="ex: 25-6028" onchange="autoSave()">
+          <input type="text" id="f-chantier" placeholder="ex: 25-6028"
+            list="list-chantier" oninput="autoSave(); onChantierInput()">
+          <datalist id="list-chantier"></datalist>
         </div>
       </div>
 

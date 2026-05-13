@@ -211,6 +211,30 @@ main {
 .btn-action.danger { color: var(--danger); border-color: #fecaca; }
 .card-label-top { font-size: 13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
 
+/* ── FAVORIS CLIENTS ── */
+.favoris-liste {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.favoris-liste:empty { display: none; }
+
+.favori-chip {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1.5px solid #bfdbfe;
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s, transform 0.1s;
+  white-space: nowrap;
+}
+.favori-chip:active { transform: scale(0.95); background: #dbeafe; }
+
 /* ── EMPTY STATE ── */
 .empty-state { text-align: center; padding: 60px 24px; color: var(--text-muted); }
 .empty-state-icon { font-size: 48px; margin-bottom: 12px; }
