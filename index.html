@@ -14,11 +14,15 @@
 </head>
 <body>
 
+  <!-- Datalists globaux pour autocomplete -->
+  <datalist id="list-client"></datalist>
+  <datalist id="list-nom-client"></datalist>
+  <datalist id="list-chantier"></datalist>
+
   <main>
 
-    <!-- ═══════════ PAGE ACCUEIL ═══════════ -->
+    <!-- ══════════ PAGE ACCUEIL ══════════ -->
     <div id="page-accueil" class="page active">
-
       <div class="header">
         <h1>Mon Pointage</h1>
         <p id="date-today" class="date-today"></p>
@@ -28,24 +32,24 @@
       <div class="action-buttons">
         <button class="btn btn-arrive" id="btn-arrive" onclick="pointer('arrivee')">
           <span class="btn-icon">▶</span>
-          <span class="btn-label">Pointer Arrivée</span>
-          <span class="btn-sub" id="btn-arrive-sub">Appuyer pour pointer</span>
+          <span class="btn-label">Arrivée</span>
+          <span class="btn-sub" id="btn-arrive-sub">Pointer</span>
         </button>
         <button class="btn btn-depart" id="btn-depart" onclick="pointer('depart')" disabled>
           <span class="btn-icon">■</span>
-          <span class="btn-label">Pointer Départ</span>
-          <span class="btn-sub" id="btn-depart-sub">Appuyer pour pointer</span>
+          <span class="btn-label">Départ</span>
+          <span class="btn-sub" id="btn-depart-sub">Pointer</span>
         </button>
       </div>
 
-      <!-- Temps net -->
+      <!-- Bannière temps net -->
       <div class="net-banner" id="net-banner">
         <span id="net-icon">⏰</span>
         <span id="net-label">Non pointé</span>
         <span id="net-value"></span>
       </div>
 
-      <!-- ── SECTION TEMPS ── -->
+      <!-- ── Temps ── -->
       <div class="section-title">⏱ Temps</div>
       <div class="card">
         <div class="field-row">
@@ -66,63 +70,26 @@
           <div class="field flex2">
             <label>Type de journée</label>
             <select id="f-type" onchange="autoSave()">
-            <option value="normal">Normal</option>
-            <option value="conge">Congé</option>
-            <option value="sans-solde">Sans solde</option>
-            <option value="formation">Formation</option>
-            <option value="maladie">Maladie</option>
-            <option value="ferie">Férié</option>
-            <option value="rtt">RTT</option>
-          </select>
+              <option value="normal">Normal</option>
+              <option value="conge">Congé</option>
+              <option value="sans-solde">Sans solde</option>
+              <option value="formation">Formation</option>
+              <option value="maladie">Maladie</option>
+              <option value="ferie">Férié</option>
+              <option value="rtt">RTT</option>
+            </select>
           </div>
         </div>
       </div>
 
-      <!-- ── SECTION MISSION ── -->
-      <div class="section-title">🏗 Mission</div>
-      <div class="card">
-        <!-- Favoris clients -->
-        <div id="clients-favoris" class="favoris-liste"></div>
-
-        <div class="field-row">
-          <div class="field">
-            <label>Code client</label>
-            <input type="text" id="f-client" placeholder="ex: AI" maxlength="10"
-              list="list-client" oninput="suggestClient()" onchange="autoSave()">
-            <datalist id="list-client"></datalist>
-          </div>
-          <div class="field flex2">
-            <label>Nom client</label>
-            <input type="text" id="f-nom-client" placeholder="ex: BOUTIN"
-              list="list-nom-client" onchange="autoSave()">
-            <datalist id="list-nom-client"></datalist>
-          </div>
-        </div>
-        <div class="field">
-          <label>N° Chantier / Affaire</label>
-          <input type="text" id="f-chantier" placeholder="ex: 25-6028"
-            list="list-chantier" oninput="onChantierInput()" onchange="autoSave()">
-          <datalist id="list-chantier"></datalist>
-        </div>
-        <button class="btn-save-client" onclick="saveClientFavori()">💾 Enregistrer ce client</button>
+      <!-- ── Missions (plusieurs chantiers) ── -->
+      <div class="section-title-row">
+        <span class="section-title" style="margin:0">🏗 Missions</span>
+        <button class="btn-add-mission" onclick="addMission()">+ Ajouter un chantier</button>
       </div>
+      <div id="missions-container"></div>
 
-      <!-- ── SECTION TRAJET ── -->
-      <div class="section-title">🚗 Trajet</div>
-      <div class="card">
-        <div class="field-row">
-          <div class="field">
-            <label>Petit Trajet</label>
-            <input type="number" id="f-ptraj" min="0" step="0.5" placeholder="0" onchange="autoSave()">
-          </div>
-          <div class="field">
-            <label>Grand Trajet</label>
-            <input type="number" id="f-gtraj" min="0" step="0.5" placeholder="0" onchange="autoSave()">
-          </div>
-        </div>
-      </div>
-
-      <!-- ── SECTION FORFAITS ── -->
+      <!-- ── Forfaits (niveau journée) ── -->
       <div class="section-title">💰 Forfaits</div>
       <div class="card">
         <div class="field-row">
@@ -141,7 +108,7 @@
         </div>
       </div>
 
-      <!-- ── SECTION AUTRES FRAIS ── -->
+      <!-- ── Autres frais ── -->
       <div class="section-title">🧾 Autres frais</div>
       <div class="card">
         <div class="field-row">
@@ -156,7 +123,7 @@
         </div>
       </div>
 
-      <!-- Semaine -->
+      <!-- ── Semaine ── -->
       <div class="section-title">📅 Cette semaine</div>
       <div class="card week-card">
         <div class="week-header">
@@ -169,26 +136,26 @@
         </div>
       </div>
 
-      <div style="height: 8px"></div>
+      <div style="height:8px"></div>
     </div>
 
-    <!-- ═══════════ PAGE HISTORIQUE ═══════════ -->
+    <!-- ══════════ PAGE HISTORIQUE ══════════ -->
     <div id="page-historique" class="page">
       <div class="header"><h1>Historique</h1></div>
       <div id="history-list"></div>
     </div>
 
-    <!-- ═══════════ PAGE STATS ═══════════ -->
+    <!-- ══════════ PAGE STATS / SALAIRE ══════════ -->
     <div id="page-stats" class="page">
-      <div class="header"><h1>Statistiques</h1></div>
+      <div class="header"><h1>Stats & Salaire</h1></div>
       <div id="stats-content"></div>
     </div>
 
-    <!-- ═══════════ PAGE PARAMÈTRES ═══════════ -->
+    <!-- ══════════ PAGE PARAMÈTRES ══════════ -->
     <div id="page-settings" class="page">
       <div class="header"><h1>Paramètres</h1></div>
 
-      <div class="section-title">⚙️ Valeurs par défaut</div>
+      <div class="section-title">⏱ Horaires par défaut</div>
       <div class="card">
         <div class="field-row">
           <div class="field">
@@ -213,22 +180,41 @@
         <button class="btn-save" onclick="saveSettings()">Enregistrer</button>
       </div>
 
+      <div class="section-title">💶 Salaire & Heures sup</div>
+      <div class="card">
+        <div class="field-row">
+          <div class="field">
+            <label>Taux horaire (€/h)</label>
+            <input type="number" id="set-taux" min="0" step="0.01" placeholder="0,00">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Seuil HS +25% (h/sem)</label>
+            <input type="number" id="set-hs25" value="35" min="1" max="60">
+          </div>
+          <div class="field">
+            <label>Seuil HS +50% (h/sem)</label>
+            <input type="number" id="set-hs50" value="43" min="1" max="80">
+          </div>
+        </div>
+        <button class="btn-save" onclick="saveSettings()">Enregistrer</button>
+      </div>
+
       <div class="section-title">🔔 Notifications iPhone</div>
       <div class="card">
-        <p class="notif-info">Utilise l'app <strong>Raccourcis</strong> pour des notifications fiables :</p>
+        <p class="notif-info">Utilise l'app <strong>Raccourcis</strong> :</p>
         <div class="shortcut-block">
           <div class="shortcut-title">🌅 Matin — arrivée</div>
           <div class="shortcut-steps">
             <p>Raccourcis → Automatisations → + → <strong>Heure de la journée</strong></p>
-            <p>Heure : <strong id="shortcut-matin">08:00</strong> · Répéter : <strong>Lun → Ven</strong></p>
-            <p>Action : Envoyer une notification → <em>⏰ Pointer arrivée !</em></p>
+            <p>Heure : <strong id="shortcut-matin">08:00</strong> · Lun→Ven · Action : <em>⏰ Pointer arrivée !</em></p>
           </div>
         </div>
         <div class="shortcut-block">
           <div class="shortcut-title">🌆 Soir — départ</div>
           <div class="shortcut-steps">
-            <p>Même étapes → Heure : <strong id="shortcut-soir">17:00</strong></p>
-            <p>Action : Envoyer une notification → <em>🏠 Pointer départ !</em></p>
+            <p>Heure : <strong id="shortcut-soir">17:00</strong> · Lun→Ven · Action : <em>🏠 Pointer départ !</em></p>
           </div>
         </div>
       </div>
@@ -242,18 +228,18 @@
 
   </main>
 
-  <!-- NAV BAS -->
+  <!-- NAV -->
   <nav class="nav-bar">
-    <button class="nav-btn active" data-page="accueil" onclick="showPage('accueil', this)">
+    <button class="nav-btn active" data-page="accueil" onclick="showPage('accueil',this)">
       <span class="nav-icon">🏠</span><span>Accueil</span>
     </button>
-    <button class="nav-btn" data-page="historique" onclick="showPage('historique', this)">
+    <button class="nav-btn" data-page="historique" onclick="showPage('historique',this)">
       <span class="nav-icon">📋</span><span>Historique</span>
     </button>
-    <button class="nav-btn" data-page="stats" onclick="showPage('stats', this)">
-      <span class="nav-icon">📊</span><span>Stats</span>
+    <button class="nav-btn" data-page="stats" onclick="showPage('stats',this)">
+      <span class="nav-icon">💶</span><span>Salaire</span>
     </button>
-    <button class="nav-btn" data-page="settings" onclick="showPage('settings', this)">
+    <button class="nav-btn" data-page="settings" onclick="showPage('settings',this)">
       <span class="nav-icon">⚙️</span><span>Réglages</span>
     </button>
   </nav>
