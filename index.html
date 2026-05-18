@@ -27,6 +27,11 @@
         <h1>Mon Pointage</h1>
         <p id="date-today" class="date-today"></p>
       </div>
+      <!-- Bannière jour passé -->
+      <div id="past-date-banner" class="past-date-banner" style="display:none">
+        <span>📅 Jour passé — modifications actives</span>
+        <button onclick="goToToday()">⬅ Aujourd'hui</button>
+      </div>
 
       <!-- Boutons pointer -->
       <div class="action-buttons">
@@ -123,6 +128,12 @@
         </div>
       </div>
 
+      <!-- ── Note ── -->
+      <div class="section-title">📝 Note du jour</div>
+      <div class="card">
+        <textarea id="f-note" placeholder="Remarque, info chantier…" rows="2" onchange="autoSave()"></textarea>
+      </div>
+
       <!-- ── Semaine ── -->
       <div class="section-title">📅 Cette semaine</div>
       <div class="card week-card">
@@ -142,6 +153,17 @@
     <!-- ══════════ PAGE HISTORIQUE ══════════ -->
     <div id="page-historique" class="page">
       <div class="header"><h1>Historique</h1></div>
+      <!-- Toggle vue -->
+      <div class="view-toggle">
+        <button id="btn-view-cal"  class="view-toggle-btn active" onclick="toggleHistoryView('calendrier')">📅 Calendrier</button>
+        <button id="btn-view-liste" class="view-toggle-btn"       onclick="toggleHistoryView('liste')">📋 Liste</button>
+      </div>
+      <!-- Filtre mois -->
+      <div class="month-nav" style="margin-bottom:10px">
+        <button onclick="historyPrevMonth()">‹</button>
+        <span id="history-month-label"></span>
+        <button onclick="historyNextMonth()">›</button>
+      </div>
       <div id="history-list"></div>
     </div>
 
@@ -222,6 +244,8 @@
       <div class="section-title">📁 Données</div>
       <div class="card">
         <button class="btn-action" onclick="exportCSV()">📥 Exporter feuille d'heures (CSV)</button>
+        <button class="btn-action" onclick="exportJSON()">💾 Sauvegarder toutes les données (JSON)</button>
+        <button class="btn-action" onclick="importJSON()">📤 Restaurer une sauvegarde (JSON)</button>
         <button class="btn-action danger" onclick="clearAllData()">🗑 Effacer toutes les données</button>
       </div>
     </div>
